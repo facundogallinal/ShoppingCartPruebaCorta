@@ -24,6 +24,16 @@ namespace Ucu.Poo.eCommerce
             }
         }
 
+        private List<ICoupon> coupons = new List<ICoupon>();
+
+        public IReadOnlyList<ICoupon> Coupons
+        {
+            get
+            {
+                return this.coupons.AsReadOnly();
+            }
+        }
+
         private List<CartItem> items = new List<CartItem>();
 
         public IReadOnlyList<CartItem> Items
@@ -32,6 +42,40 @@ namespace Ucu.Poo.eCommerce
             {
                 return this.items.AsReadOnly();
             }
+        }
+
+        /// <summary>
+        /// Si hay un DiscountCoupon agregado lanza una excepcion por no poder acumularlo con otro, lo mismo si intento agregar un DiscountCoupon a una lista con más cupones.
+        /// </summary>
+        /// <param name="coupon"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddCoupon(ICoupon coupon)
+        {
+            if (this.coupons.Count == 0 || this.coupons == null)
+            {
+                this.coupons.Add(coupon);
+            }
+            else if (coupon is DiscountCoupon)
+            {
+                throw new ArgumentException(
+                    "No puedes agregar un DiscountCoupon si tienes más cupones, si quieres usar este cupón debes quitar los demás");
+            }
+            else
+            {
+                if (this.coupons[0] is DiscountCoupon)
+                {
+                    throw new ArgumentException("No se puede acumular un cupon con el DiscountCoupon que ya tienes agregado");
+                }
+                else
+                {
+                    this.coupons.Add(coupon);
+                }
+            }
+        }
+
+        public void ClearCoupons()
+        {
+            this.coupons = new List<ICoupon>();
         }
 
         private CartItem GetItemWithProduct(Product product)
@@ -79,11 +123,23 @@ namespace Ucu.Poo.eCommerce
         public double GetTotal()
         {
             double result = 0.0;
-            foreach (CartItem item in this.items)
+            if (this.coupons.Count == 0 || this.coupons == null)
             {
-                result += item.GetItemTotal();
+                foreach (CartItem item in this.items)
+                {
+                    result += item.GetItemTotal();
+                }
             }
-
+            else
+            {
+                foreach (CartItem item in this.items)
+                {
+                    foreach (ICoupon coupon in this.coupons)
+                    {
+                        result += coupon.Discount(item);
+                    }
+                }
+            }
             return result;
         }
     }
