@@ -10,7 +10,7 @@
         }
         public double Discount(ShoppingCart.CartItem item)
         {
-            return(item.GetItemTotal() - item.GetItemTotal() * (this.Percent / 100));
+            return(item.GetItemTotal() - item.GetItemTotal() * this.Percent / 100);
         }
     }
 }

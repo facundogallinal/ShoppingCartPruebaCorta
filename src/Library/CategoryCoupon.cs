@@ -15,7 +15,7 @@
             double result = item.GetItemTotal();
             if (item.Product.Category == this.Category)
             {
-                result = result - result * (this.Percent / 100);
+                result = result - result * this.Percent / 100;
             }
 
             return result;
